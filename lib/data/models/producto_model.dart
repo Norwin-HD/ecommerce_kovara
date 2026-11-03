@@ -1,0 +1,70 @@
+import 'package:ecommerce_kovara/data/models/Categoria_model.dart';
+import 'package:ecommerce_kovara/data/models/variante_producto_model.dart';
+
+class Producto {
+  final String id;
+  final String name;
+  final String slug;
+  final String brandId;
+  final String status;
+  final String? description;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  final List<Categoria> categorias;
+  final List<VarianteProducto> variantes;
+
+  Producto({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.brandId,
+    required this.status,
+    this.description,
+    required this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+    required this.categorias,
+    required this.variantes,
+  });
+
+  factory Producto.fromJson(Map<String, dynamic> json) {
+    return Producto(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      slug: json['slug'] as String,
+      brandId: json['brand_id'] as String,
+      status: json['status'] as String,
+      description: json['description'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String)
+          : null,
+      categorias: json['CATEGORIAS'] != null
+          ? (json['CATEGORIAS'] as List)
+                .map((c) => Categoria.fromJson(c))
+                .toList()
+          : [],
+      variantes: json['VARIANTE_PRODUCTOS'] != null
+          ? (json['VARIANTE_PRODUCTOS'] as List)
+                // Filtramos internamente las eliminadas (por si acaso)
+                .where((v) => v['deleted_at'] == null)
+                .map((v) => VarianteProducto.fromJson(v))
+                .toList()
+          : [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'slug': slug,
+      'brand_id': brandId,
+      'status': status,
+      'description': description,
+    };
+  }
+}

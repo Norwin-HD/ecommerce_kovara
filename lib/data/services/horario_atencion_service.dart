@@ -3,9 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class HorarioAtencionService {
   final SupabaseClient _client;
 
-  HorarioAtencionService({SupabaseClient? client}) 
+  HorarioAtencionService({SupabaseClient? client}) // INYECCION DE DEPENDENCIAS
       : _client = client ?? Supabase.instance.client;
-
+  
+  // GET: OBTENER HORARIOS DE ATENCION
   Future<List> obtenerHorariosRaw() async {
     try {
       final response = await _client

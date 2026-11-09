@@ -2,6 +2,7 @@ import 'package:ecommerce_kovara/data/models/descuento_model.dart';
 import 'package:ecommerce_kovara/data/models/descuento_variante.dart';
 import 'package:ecommerce_kovara/data/models/imagen_producto_model.dart';
 
+ // TODO: REVISA QUE NO SE APLIQUE DE FORMA GENERAL Y SOLO SEA POR LA VARIENTE
 class VarianteProducto {
   // MODELO PARA REPRESENTAR UNA VARIANTE DE UN PRODUCTO
   final String id;

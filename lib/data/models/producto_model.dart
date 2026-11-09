@@ -2,7 +2,9 @@ import 'package:ecommerce_kovara/data/models/categoria_model.dart';
 import 'package:ecommerce_kovara/data/models/descuento_model.dart';
 import 'package:ecommerce_kovara/data/models/variante_producto_model.dart';
 
+ // TODO: FALTA AGREGAR LA MARCA DEL PRODUCTO
 class Producto {
+  // MODELO PARA REPRESENTAR UN PRODUCTO
   final String id;
   final String name;
   final String slug;
@@ -15,6 +17,7 @@ class Producto {
   final List<Categoria> categorias;
   final List<VarianteProducto> variantes;
 
+ // CONSTRUCTOR
   Producto({
     required this.id,
     required this.name,
@@ -28,7 +31,8 @@ class Producto {
     required this.categorias,
     required this.variantes,
   });
-
+  
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory Producto.fromJson(Map<String, dynamic> json) {
     return Producto(
       id: json['id'] as String,
@@ -59,7 +63,7 @@ class Producto {
     );
   }
 
-  /// Mejor descuento vigente entre todas las variantes del producto.
+  /// ELEGIR EL MEJOR DESCUENTO DE TODAS LAS VARIANTES DEL PRODUCTO
   Descuento? get descuentoActivo {
     Descuento? mejor;
     for (final v in variantes) {
@@ -74,14 +78,13 @@ class Producto {
 
   bool get tieneDescuento => descuentoActivo != null;
 
-  /// Precio final de [precioBase] usando el mejor descuento del producto.
-  /// Para cobro por variante preferir [VarianteProducto.precioFinal].
+  // CALCULA EL PRECIO FINAL DEL PRODUCTO, TOMANDO EN CUENTA EL DESCUENTO ACTIVO SI EXISTE
   double precioFinal(double precioBase) {
     final d = descuentoActivo;
     return d == null ? precioBase : d.aplicarA(precioBase);
   }
 
-  /// Variante con el menor precio final (con descuento aplicado si tiene).
+  // OBTENER LA VARIANTE MAS BARATA DEL PRODUCTO
   VarianteProducto? get varianteMasBarata {
     if (variantes.isEmpty) return null;
     return variantes.reduce((a, b) {

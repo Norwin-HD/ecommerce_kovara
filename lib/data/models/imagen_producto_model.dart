@@ -1,3 +1,4 @@
+// MODELO PIVOTE PARA LAS IMAGENES DE LOS PRODUCTOS
 class ImagenProducto {
   final String id;
   final String productId;
@@ -5,7 +6,8 @@ class ImagenProducto {
   final String imageUrl;
   final bool isPrimary;
   final int sortOrder;
-
+  
+  // CONSTRUCTOR
   ImagenProducto({
     required this.id,
     required this.productId,
@@ -14,7 +16,8 @@ class ImagenProducto {
     required this.isPrimary,
     required this.sortOrder,
   });
-
+  
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory ImagenProducto.fromJson(Map<String, dynamic> json) {
     return ImagenProducto(
       id: json['id'] as String,

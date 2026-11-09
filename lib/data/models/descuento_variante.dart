@@ -1,25 +1,22 @@
 import 'package:ecommerce_kovara/data/models/descuento_model.dart';
-
-/// Registro de la tabla pivote DESCUENTO_VARIANTE
-/// (discount_id → variant_id) con el descuento anidado.
 class DescuentoVariante {
+  // ATRIBUTOS
   final int discountId;
   final String? variantId;
   final Descuento? descuento;
 
+  // CONSTRUCTOR
   DescuentoVariante({
     required this.discountId,
     this.variantId,
     this.descuento,
   });
 
-  /// Soporta:
-  /// - Fila de la pivote: {discount_id, variant_id, DESCUENTO: {...}}
-  /// - Embedded desde variante: {DESCUENTO: {...}}
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory DescuentoVariante.fromJson(Map<String, dynamic> json) {
-    final nested = json['DESCUENTO'];
-    final descuento = nested is Map
-        ? Descuento.fromJson(Map<String, dynamic>.from(nested))
+    final nested = json['DESCUENTO']; // Accedemos al objeto anidado DESCUENTO
+    final descuento = nested is Map // Verificamos si DESCUENTO es un Map antes de intentar convertirl
+        ? Descuento.fromJson(Map<String, dynamic>.from(nested)) // Convertimos el Map a Descuento
         : null;
 
     return DescuentoVariante(
@@ -37,7 +34,7 @@ class DescuentoVariante {
     };
   }
 
-  /// Descuento vigente (si el anidado existe y está activo por fecha).
+  // OBTIENE EL DESCUENTO VIGENTE
   Descuento? get descuentoVigente {
     final d = descuento;
     if (d == null || !d.estaVigente()) return null;

@@ -1,4 +1,5 @@
 class Marca {
+// MODELO PARA REPRESENTAR UNA MARCA DE LOS PRODUCTOS
   String id;
   String name;
   String slug;
@@ -7,6 +8,7 @@ class Marca {
   DateTime? updatedAt;
   DateTime? deletedAt;
 
+  // CONSTRUCTOR
   Marca({
     required this.id,
     required this.name,
@@ -17,6 +19,7 @@ class Marca {
     this.deletedAt,
   });
 
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory Marca.fromJson(Map<String, dynamic> json) {
     return Marca(
       id: json['id'] as String,

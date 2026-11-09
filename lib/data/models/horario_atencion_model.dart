@@ -1,10 +1,12 @@
 class HorarioAtencion {
+  // Modelo para representar el horario de atención de un negocio
   final int id;
   final int dayOfWeek;
   final String? openTime; 
   final String? closeTime; 
   final DateTime createdAt;
 
+  // Constructor
   HorarioAtencion({
     required this.id,
     required this.dayOfWeek,
@@ -13,6 +15,7 @@ class HorarioAtencion {
     required this.createdAt,
   });
 
+  // TRANSFORMA EL JSON RECIBIDO EN UN OBJETO DE TIPO HorarioAtencion
   factory HorarioAtencion.fromJson(Map<String, dynamic> json) {
     return HorarioAtencion(
       id: json['id'] as int,
@@ -23,9 +26,12 @@ class HorarioAtencion {
     );
   }
 
-  // Devuelve true si la tienda no abre ese dia
+  // METODOS 
+
+  // HELPER USADO PARA SABER SI EL NEGOCIO ESTA CERRADO O ABIERTO
   bool get estaCerrado => openTime == null || closeTime == null;
 
+  // HELPER PARA TRANSFORMAR LOS DATOS NUMERICOS EN NOMBRES DE DIAS DE LA SEMANA
   String get nombreDia {
     switch (dayOfWeek) {
       case 1: return 'Lunes';
@@ -39,6 +45,7 @@ class HorarioAtencion {
     }
   }
 
+  // HELPER PARA FORMATEAR EL HORARIO EN UNA CADENA LEGIBLE
   String get horarioFormateado {
     if (estaCerrado) return 'Cerrado';
     final open = openTime!.substring(0, 5); 

@@ -1,4 +1,5 @@
 class Categoria {
+  // ATRIBUTOS
   final String id;
   final String name;
   final String slug;
@@ -7,6 +8,7 @@ class Categoria {
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
+  // CONSTRUCTOR
   Categoria({
     required this.id,
     required this.name,
@@ -17,13 +19,13 @@ class Categoria {
     this.deletedAt,
   });
 
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory Categoria.fromJson(Map<String, dynamic> json) {
     return Categoria(
       id: json['id'] as String,
       name: json['name'] as String,
       slug: json['slug'] as String,
       description: json['description'] as String?,
-      // Convertimos los Strings de fecha que manda Supabase a DateTime
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null 
           ? DateTime.parse(json['updated_at'] as String) 

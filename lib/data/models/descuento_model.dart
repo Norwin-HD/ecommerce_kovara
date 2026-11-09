@@ -1,4 +1,5 @@
 class Descuento {
+  // ATRIBUTOS
   final int id;
   final String name;
   final DateTime dateInit;
@@ -8,6 +9,7 @@ class Descuento {
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
+  // CONSTRUCTOR
   Descuento({
     required this.id,
     required this.name,
@@ -18,7 +20,8 @@ class Descuento {
     this.updatedAt,
     this.deletedAt,
   });
-
+  
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory Descuento.fromJson(Map<String, dynamic> json) {
     return Descuento(
       id: json['id'] as int,
@@ -36,6 +39,7 @@ class Descuento {
     );
   }
 
+  // REALIZAR EL FORMATO JSON
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -44,10 +48,10 @@ class Descuento {
       'porcentage_discount': porcentageDiscount,
     };
   }
+  
+  // METODOS
 
-  /// Indica si el descuento está vigente en [fecha] (por defecto hoy),
-  /// considerando que no esté eliminado y que la fecha caiga dentro
-  /// del rango [dateInit, dateExpiration] (inclusive, por día).
+ // INDICA SI EL DESCUENTA ESTA VIGENTE
   bool estaVigente([DateTime? fecha]) {
     if (deletedAt != null) return false;
 
@@ -63,8 +67,7 @@ class Descuento {
     return !dia.isBefore(inicio) && !dia.isAfter(fin);
   }
 
-  /// Aplica el porcentaje de descuento sobre [precio].
-  /// Ej: precio 10000 con 15% -> 8500
+  // APLICA EL PORCENTAJE DE DESCUENTO SOBRE EL PRECIO Y DEVUELVE EL NUEVO PRECIO
   double aplicarA(double precio) {
     if (porcentageDiscount <= 0) return precio;
     if (porcentageDiscount >= 100) return 0;

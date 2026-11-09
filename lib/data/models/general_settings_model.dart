@@ -1,4 +1,5 @@
 class GeneralSettings {
+  // ATRIBUTOS
   final int id;
   final String whatsappNumber;
   final double tax;
@@ -13,6 +14,7 @@ class GeneralSettings {
   final String baseCurrencySymbol;
   final DateTime createdAt;
 
+  // CONSTRUCTOR
   GeneralSettings({
     required this.id,
     required this.whatsappNumber,
@@ -29,11 +31,12 @@ class GeneralSettings {
     required this.createdAt,
   });
 
+  // TOMA LOS VALORES OBTENIDOS DEL JSON Y LOS ASIGNA A LOS ATRIBUTOS DE LA CLASE
   factory GeneralSettings.fromJson(Map<String, dynamic> json) {
     return GeneralSettings(
       id: json['id'] as int,
       whatsappNumber: json['whatsapp_number'] as String,
-      // Manejo seguro del valor numérico para impuestos
+      // El valor de tax a double para evitar problemas de tipo
       tax: (json['tax'] as num).toDouble(),
       heroBannerUrl: json['hero_banner_url'] as String,
       supportEmail: json['support_email'] as String,
@@ -41,7 +44,6 @@ class GeneralSettings {
       socialFacebook: json['social_facebook'] as String,
       socialTiktok: json['social_tiktok'] as String,
       logoUrl: json['logo_url'] as String,
-      // Si es nulo en BD, asumimos por seguridad que NO está cerrada
       isTemporarilyClosed: json['is_temporarily_closed'] as bool? ?? false,
       baseCurrencyCode: json['base_currency_code'] as String,
       baseCurrencySymbol: json['base_currency_symbol'] as String,

@@ -3,6 +3,7 @@ import 'package:ecommerce_kovara/data/models/descuento_variante.dart';
 import 'package:ecommerce_kovara/data/models/imagen_producto_model.dart';
 
 class VarianteProducto {
+  // MODELO PARA REPRESENTAR UNA VARIANTE DE UN PRODUCTO
   final String id;
   final String? productId;
   final String sku;
@@ -13,6 +14,7 @@ class VarianteProducto {
   final List<ImagenProducto> imagenes;
   final List<DescuentoVariante> descuentosVariante;
 
+  // CONSTRUCTOR 
   VarianteProducto({
     required this.id,
     this.productId,
@@ -31,7 +33,6 @@ class VarianteProducto {
       productId: json['product_id'] as String?,
       sku: json['sku'] as String,
       atributos: Map<String, dynamic>.from(json['atributtes'] as Map),
-      // Parseo seguro de numeric (puede llegar como int o double desde el JSON)
       price: (json['price'] as num).toDouble(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
@@ -55,6 +56,7 @@ class VarianteProducto {
         .toList();
   }
 
+  // OBTENER LA IMAGEN PRINCIPAL DE LA VARIANTE, EN CASO DE NO EXISTIR, SE TOMA LA PRIMERA IMAGEN DISPONIBLE
   String get imagenPrincipalUrl {
     if (imagenes.isEmpty) return '';
 
@@ -65,7 +67,7 @@ class VarianteProducto {
     }
   }
 
-  /// Mejor descuento vigente asociado a esta variante.
+  // ELEGIR EL MEJOR DESCUENTO DE TODAS LAS VARIANTES DEL PRODUCTO
   Descuento? get descuentoActivo {
     Descuento? mejor;
     for (final dv in descuentosVariante) {
@@ -80,7 +82,7 @@ class VarianteProducto {
 
   bool get tieneDescuento => descuentoActivo != null;
 
-  /// Precio final de esta variante aplicando su descuento vigente.
+  // CALCULA EL PRECIO FINAL DE LA VARIANTE, TOMANDO EN CUENTA EL DESCUENTO ACTIVO SI EXISTE
   double precioFinal([double? precioBase]) {
     final base = precioBase ?? price;
     final d = descuentoActivo;

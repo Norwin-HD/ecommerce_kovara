@@ -45,7 +45,8 @@ class ProductoService {
           CATEGORIAS(*), 
           VARIANTE_PRODUCTOS(
             *,
-            IMAGEN_PRODUCTOS(*)
+            IMAGEN_PRODUCTOS(*),
+            DESCUENTO_VARIANTE(*, DESCUENTO(*))
           )
         ''')
           .isFilter('deleted_at', null)

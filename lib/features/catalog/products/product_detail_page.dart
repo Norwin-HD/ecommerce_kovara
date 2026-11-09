@@ -8,6 +8,7 @@ import '../../../data/models/producto_model.dart';
 import '../../../data/models/variante_producto_model.dart';
 import '../../cart/cart_controller.dart';
 import '../../../widgets/common/app_empty_state.dart';
+import '../../../widgets/common/discount_widgets.dart';
 import '../../../widgets/common/price_text.dart';
 import '../../../widgets/common/section_title.dart';
 import '../../../widgets/common/status_chip.dart';
@@ -20,11 +21,10 @@ class ProductDetailPage extends StatelessWidget {
 
   final Producto product;
 
-  double? get _minPrice => product.variantes.isEmpty
-      ? null
-      : product.variantes
-          .map((v) => v.price)
-          .reduce((a, b) => a < b ? a : b);
+  /// Variante con el menor precio final (con descuento si aplica).
+  VarianteProducto? get _cheapestVariant => product.varianteMasBarata;
+
+  double? get _minPrice => _cheapestVariant?.price;
 
   void _addToCart(BuildContext context, VarianteProducto variant) {
     context.read<CartController>().add(
@@ -32,7 +32,7 @@ class ProductDetailPage extends StatelessWidget {
           variantId: variant.id,
           name: product.name,
           sku: variant.sku,
-          unitPrice: variant.price,
+          unitPrice: variant.precioFinal(),
           imageUrl: variant.imagenPrincipalUrl,
         );
 
@@ -103,7 +103,21 @@ class ProductDetailPage extends StatelessWidget {
                         '${AppStrings.fromPrice} ',
                         style: textTheme.bodyMedium,
                       ),
-                      PriceText(price: _minPrice, fontSize: 26),
+                      Builder(
+                        builder: (context) {
+                          final variant = _cheapestVariant!;
+                          final discount = variant.descuentoActivo;
+                          if (discount == null) {
+                            return PriceText(price: _minPrice, fontSize: 26);
+                          }
+                          return DiscountPriceText(
+                            originalPrice: variant.price,
+                            finalPrice: discount.aplicarA(variant.price),
+                            fontSize: 26,
+                            percentage: discount.porcentageDiscount,
+                          );
+                        },
+                      ),
                     ] else
                       const PriceText(
                         price: null,

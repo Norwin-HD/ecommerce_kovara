@@ -5,9 +5,11 @@ import '../../../../app/router.dart';
 import '../../../../core/consts/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
+import '../../../../data/models/descuento_model.dart';
 import '../../../../data/models/producto_model.dart';
 import '../../../../data/models/variante_producto_model.dart';
 import '../../../cart/cart_controller.dart';
+import '../../../../widgets/common/discount_widgets.dart';
 import '../../../../widgets/common/network_image_view.dart';
 import '../../../../widgets/common/price_text.dart';
 import '../../../../widgets/common/status_chip.dart';
@@ -21,13 +23,29 @@ class ProductCard extends StatelessWidget {
   VarianteProducto? get _mainVariant =>
       product.variantes.isEmpty ? null : product.variantes.first;
 
-  double? get _minPrice => product.variantes.isEmpty
-      ? null
-      : product.variantes
-          .map((v) => v.price)
-          .reduce((a, b) => a < b ? a : b);
+  /// Variante con el menor precio final (ya con descuento si aplica).
+  VarianteProducto? get _cheapestVariant => product.varianteMasBarata;
 
   String get _imageUrl => _mainVariant?.imagenPrincipalUrl ?? '';
+
+  Widget _buildPrice() {
+    final variant = _cheapestVariant;
+    if (variant == null) {
+      return const PriceText(price: null, emptyLabel: AppStrings.noPrice);
+    }
+
+    final discount = variant.descuentoActivo;
+    if (discount == null) {
+      return PriceText(price: variant.price);
+    }
+
+    return DiscountPriceText(
+      originalPrice: variant.price,
+      finalPrice: discount.aplicarA(variant.price),
+      fontSize: 16,
+      percentage: discount.porcentageDiscount,
+    );
+  }
 
   void _quickAdd(BuildContext context) {
     final variant = _mainVariant;
@@ -38,7 +56,7 @@ class ProductCard extends StatelessWidget {
           variantId: variant.id,
           name: product.name,
           sku: variant.sku,
-          unitPrice: variant.price,
+          unitPrice: variant.precioFinal(),
           imageUrl: variant.imagenPrincipalUrl,
         );
 
@@ -74,7 +92,12 @@ class ProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ImageSection(url: _imageUrl, status: product.status),
+              _ImageSection(
+                url: _imageUrl,
+                status: product.status,
+                discount: _cheapestVariant?.descuentoActivo ??
+                    product.descuentoActivo,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
@@ -93,10 +116,7 @@ class ProductCard extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: PriceText(
-                              price: _minPrice,
-                              emptyLabel: AppStrings.noPrice,
-                            ),
+                            child: _buildPrice(),
                           ),
                           if (_mainVariant != null) ...[
                             const SizedBox(width: AppSpacing.sm),
@@ -130,10 +150,15 @@ class ProductCard extends StatelessWidget {
 }
 
 class _ImageSection extends StatelessWidget {
-  const _ImageSection({required this.url, required this.status});
+  const _ImageSection({
+    required this.url,
+    required this.status,
+    this.discount,
+  });
 
   final String url;
   final String status;
+  final Descuento? discount;
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +170,14 @@ class _ImageSection extends StatelessWidget {
           width: double.infinity,
           icon: Icons.laptop_mac_outlined,
         ),
+        if (discount != null)
+          Positioned(
+            top: AppSpacing.sm,
+            left: AppSpacing.sm,
+            child: DiscountBadge(
+              percentage: discount!.porcentageDiscount,
+            ),
+          ),
         Positioned(
           top: AppSpacing.sm,
           right: AppSpacing.sm,

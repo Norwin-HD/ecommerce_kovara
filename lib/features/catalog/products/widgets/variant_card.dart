@@ -4,6 +4,7 @@ import '../../../../core/consts/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
 import '../../../../data/models/variante_producto_model.dart';
+import '../../../../widgets/common/discount_widgets.dart';
 import '../../../../widgets/common/price_text.dart';
 
 /// Tarjeta de una variante de producto (SKU + atributos + precio).
@@ -74,7 +75,20 @@ class VariantCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              PriceText(price: variant.price, fontSize: 16),
+              Builder(
+                builder: (context) {
+                  final discount = variant.descuentoActivo;
+                  if (discount == null) {
+                    return PriceText(price: variant.price, fontSize: 16);
+                  }
+                  return DiscountPriceText(
+                    originalPrice: variant.price,
+                    finalPrice: discount.aplicarA(variant.price),
+                    fontSize: 16,
+                    percentage: discount.porcentageDiscount,
+                  );
+                },
+              ),
             ],
           ),
           if (onAddToCart != null) ...[

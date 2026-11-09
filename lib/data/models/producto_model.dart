@@ -1,4 +1,5 @@
 import 'package:ecommerce_kovara/data/models/categoria_model.dart';
+import 'package:ecommerce_kovara/data/models/descuento_model.dart';
 import 'package:ecommerce_kovara/data/models/variante_producto_model.dart';
 
 class Producto {
@@ -56,6 +57,38 @@ class Producto {
                 .toList()
           : [],
     );
+  }
+
+  /// Mejor descuento vigente entre todas las variantes del producto.
+  Descuento? get descuentoActivo {
+    Descuento? mejor;
+    for (final v in variantes) {
+      final d = v.descuentoActivo;
+      if (d == null) continue;
+      if (mejor == null || d.porcentageDiscount > mejor.porcentageDiscount) {
+        mejor = d;
+      }
+    }
+    return mejor;
+  }
+
+  bool get tieneDescuento => descuentoActivo != null;
+
+  /// Precio final de [precioBase] usando el mejor descuento del producto.
+  /// Para cobro por variante preferir [VarianteProducto.precioFinal].
+  double precioFinal(double precioBase) {
+    final d = descuentoActivo;
+    return d == null ? precioBase : d.aplicarA(precioBase);
+  }
+
+  /// Variante con el menor precio final (con descuento aplicado si tiene).
+  VarianteProducto? get varianteMasBarata {
+    if (variantes.isEmpty) return null;
+    return variantes.reduce((a, b) {
+      final pa = a.precioFinal();
+      final pb = b.precioFinal();
+      return pb < pa ? b : a;
+    });
   }
 
   Map<String, dynamic> toJson() {

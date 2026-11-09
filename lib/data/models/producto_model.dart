@@ -1,4 +1,4 @@
-import 'package:ecommerce_kovara/data/models/Categoria_model.dart';
+import 'package:ecommerce_kovara/data/models/categoria_model.dart';
 import 'package:ecommerce_kovara/data/models/variante_producto_model.dart';
 
 class Producto {

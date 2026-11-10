@@ -2,7 +2,6 @@ import 'package:ecommerce_kovara/data/models/categoria_model.dart';
 import 'package:ecommerce_kovara/data/models/descuento_model.dart';
 import 'package:ecommerce_kovara/data/models/variante_producto_model.dart';
 
- // TODO: FALTA AGREGAR LA MARCA DEL PRODUCTO
 class Producto {
   // MODELO PARA REPRESENTAR UN PRODUCTO
   final String id;

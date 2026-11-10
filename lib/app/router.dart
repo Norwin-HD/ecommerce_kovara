@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/models/categoria_model.dart';
 import '../data/models/producto_model.dart';
 import '../data/repository/categoria_repository.dart';
+import '../data/repository/marca_repository.dart';
 import '../data/repository/producto_repository.dart';
 import '../features/catalog/catalog_shell.dart';
 import '../features/catalog/categories/category_products_page.dart';
@@ -23,10 +24,12 @@ class AppRouter {
   AppRouter({
     required this.productoRepository,
     required this.categoriaRepository,
-  });
+    MarcaRepository? marcaRepository,
+  }) : marcaRepository = marcaRepository ?? MarcaRepository();
 
   final ProductoRepository productoRepository;
   final CategoriaRepository categoriaRepository;
+  final MarcaRepository marcaRepository;
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -36,6 +39,7 @@ class AppRouter {
           builder: (_) => CatalogShell(
             productoRepository: productoRepository,
             categoriaRepository: categoriaRepository,
+            marcaRepository: marcaRepository,
           ),
         );
 

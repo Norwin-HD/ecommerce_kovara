@@ -1,12 +1,12 @@
 class Marca {
-// MODELO PARA REPRESENTAR UNA MARCA DE LOS PRODUCTOS
-  String id;
-  String name;
-  String slug;
-  String? logoUrl;
-  DateTime createdAt;
-  DateTime? updatedAt;
-  DateTime? deletedAt;
+  // MODELO PARA REPRESENTAR UNA MARCA DE LOS PRODUCTOS
+  final String id;
+  final String name;
+  final String slug;
+  final String? logoUrl;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
 
   // CONSTRUCTOR
   Marca({
@@ -43,4 +43,12 @@ class Marca {
       'logo_url': logoUrl,
     };
   }
+
+  /// Igualdad por id (útil para comparar selección de filtros).
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is Marca && other.id == id);
+
+  @override
+  int get hashCode => id.hashCode;
 }

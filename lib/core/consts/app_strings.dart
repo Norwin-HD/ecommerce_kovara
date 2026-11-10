@@ -15,6 +15,8 @@ class AppStrings {
   static const catalogTitle = 'Catálogo Kovara';
   static const searchHint = 'Buscar laptop, SKU o categoría...';
   static const allCategories = 'Todos';
+  static const allBrands = 'Todas';
+  static const brandsLabel = 'Marcas';
   static const refresh = 'Actualizar';
   static const seeDetails = 'Ver detalles';
   static const fromPrice = 'Desde';
@@ -40,6 +42,7 @@ class AppStrings {
   // Categorías.
   static const categoriesTitle = 'Categorías';
   static const noCategoryDescription = 'Sin descripción';
+  static const productsCountLabel = 'productos';
 
   // Inicio / destacados.
   static const featuredSection = 'Destacados';

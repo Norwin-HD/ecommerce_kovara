@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/consts/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/repository/categoria_repository.dart';
+import '../../data/repository/marca_repository.dart';
 import '../../data/repository/producto_repository.dart';
 import '../../features/cart/cart_controller.dart';
 import '../../features/cart/cart_page.dart';
@@ -17,10 +18,12 @@ class CatalogShell extends StatefulWidget {
     super.key,
     required this.productoRepository,
     required this.categoriaRepository,
+    required this.marcaRepository,
   });
 
   final ProductoRepository productoRepository;
   final CategoriaRepository categoriaRepository;
+  final MarcaRepository marcaRepository;
 
   @override
   State<CatalogShell> createState() => _CatalogShellState();
@@ -51,8 +54,12 @@ class _CatalogShellState extends State<CatalogShell> {
           ProductsPage(
             productoRepository: widget.productoRepository,
             categoriaRepository: widget.categoriaRepository,
+            marcaRepository: widget.marcaRepository,
           ),
-          CategoriesPage(repository: widget.categoriaRepository),
+          CategoriesPage(
+            repository: widget.categoriaRepository,
+            productoRepository: widget.productoRepository,
+          ),
           const CartPage(),
         ],
       ),

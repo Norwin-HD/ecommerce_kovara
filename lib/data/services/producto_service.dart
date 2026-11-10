@@ -23,21 +23,30 @@ class ProductoService {
     }
   }
 
-  // TODO: HAY QUE IMPLEMENTARLO EN UN FILTRO
-  
-  // GET: OBTENER PRODUCTOS POR MARCA
+  // GET: OBTENER PRODUCTOS POR MARCA (catálogo completo de la marca)
   Future<List> obtenerProductosPorMarcaRaw(String brandId) async {
     try {
       final response = await _client
           .from('PRODUCTOS')
-          .select()
+          .select('''
+          *,
+          CATEGORIAS(*),
+          VARIANTE_PRODUCTOS(
+            *,
+            IMAGEN_PRODUCTOS(*),
+            DESCUENTO_VARIANTE(*, DESCUENTO(*))
+          )
+        ''')
           .isFilter('deleted_at', null)
-          .eq(
-            'brand_id',
-            brandId,
-          ); // VALIDA QUE EL PRODUCTO PERTENEZCA A LA MARCA
+          .eq('status', 'ACTIVO')
+          .eq('brand_id', brandId)
+          .order('created_at', ascending: false);
 
       return response;
+    } on PostgrestException catch (e) {
+      throw Exception(
+        'Error de base de datos en productos por marca: ${e.message}',
+      );
     } catch (e) {
       throw Exception('Error al obtener productos de la marca: $e');
     }

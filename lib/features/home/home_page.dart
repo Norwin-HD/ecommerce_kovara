@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage>
   List<Producto> _recent(List<Producto> products) {
     final sorted = [...products]
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return sorted.take(8).toList();
+    return sorted.take(3).toList();
   }
 
   @override
@@ -94,13 +94,6 @@ class _HomePageState extends State<HomePage>
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: AppStrings.refresh,
-            onPressed: _refresh,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: FutureBuilder<List<Producto>>(
         future: _productsFuture,
@@ -143,6 +136,7 @@ class _HomePageState extends State<HomePage>
                       final categories = categorySnapshot.data ?? const [];
                       return QuickCategoriesSection(
                         categories: categories,
+                        products: products,
                         onSeeAll: widget.onSeeAllCategories,
                       );
                     },

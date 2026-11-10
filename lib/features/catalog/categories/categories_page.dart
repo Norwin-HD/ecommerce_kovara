@@ -3,17 +3,37 @@ import 'package:flutter/material.dart';
 import '../../../core/consts/app_strings.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../data/models/categoria_model.dart';
+import '../../../data/models/producto_model.dart';
 import '../../../data/repository/categoria_repository.dart';
+import '../../../data/repository/producto_repository.dart';
 import '../../../widgets/common/app_empty_state.dart';
 import '../../../widgets/common/app_error_state.dart';
 import '../../../widgets/common/app_loading.dart';
 import 'widgets/category_card.dart';
 
-/// Grid de categorías del catálogo.
+/// Resultado de cargar categorías + portadas/count desde el catálogo.
+class _CategoriesData {
+  const _CategoriesData({
+    required this.categories,
+    required this.covers,
+    required this.counts,
+  });
+
+  final List<Categoria> categories;
+  final Map<String, String> covers;
+  final Map<String, int> counts;
+}
+
+/// Grid de categorías del catálogo con foto de portada por categoría.
 class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key, required this.repository});
+  const CategoriesPage({
+    super.key,
+    required this.repository,
+    required this.productoRepository,
+  });
 
   final CategoriaRepository repository;
+  final ProductoRepository productoRepository;
 
   @override
   State<CategoriesPage> createState() => _CategoriesPageState();
@@ -21,7 +41,7 @@ class CategoriesPage extends StatefulWidget {
 
 class _CategoriesPageState extends State<CategoriesPage>
     with AutomaticKeepAliveClientMixin {
-  late Future<List<Categoria>> _future;
+  late Future<_CategoriesData> _future;
 
   @override
   bool get wantKeepAlive => true;
@@ -33,7 +53,39 @@ class _CategoriesPageState extends State<CategoriesPage>
   }
 
   void _load() {
-    _future = widget.repository.getCategorias();
+    _future = _loadData();
+  }
+
+  /// Carga categorías y, con el catálogo, arma portada + contador por id.
+  Future<_CategoriesData> _loadData() async {
+    final results = await Future.wait([
+      widget.repository.getCategorias(),
+      widget.productoRepository.getCatalogoPublico(),
+    ]);
+
+    final categories = results[0] as List<Categoria>;
+    final products = results[1] as List<Producto>;
+
+    final covers = <String, String>{};
+    final counts = <String, int>{};
+
+    for (final product in products) {
+      final imageUrl = product.variantes.isEmpty
+          ? ''
+          : product.variantes.first.imagenPrincipalUrl;
+      for (final category in product.categorias) {
+        counts[category.id] = (counts[category.id] ?? 0) + 1;
+        if (imageUrl.isNotEmpty && !covers.containsKey(category.id)) {
+          covers[category.id] = imageUrl;
+        }
+      }
+    }
+
+    return _CategoriesData(
+      categories: categories,
+      covers: covers,
+      counts: counts,
+    );
   }
 
   void _retry() => setState(_load);
@@ -43,7 +95,7 @@ class _CategoriesPageState extends State<CategoriesPage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.categoriesTitle)),
-      body: FutureBuilder<List<Categoria>>(
+      body: FutureBuilder<_CategoriesData>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -56,7 +108,8 @@ class _CategoriesPageState extends State<CategoriesPage>
             );
           }
 
-          final categories = snapshot.data ?? [];
+          final data = snapshot.data;
+          final categories = data?.categories ?? const <Categoria>[];
           if (categories.isEmpty) {
             return const AppEmptyState(
               icon: Icons.category_outlined,
@@ -81,8 +134,14 @@ class _CategoriesPageState extends State<CategoriesPage>
                 mainAxisSpacing: AppSpacing.lg,
               ),
               itemCount: categories.length,
-              itemBuilder: (context, index) =>
-                  CategoryCard(category: categories[index]),
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                return CategoryCard(
+                  category: category,
+                  imageUrl: data?.covers[category.id] ?? '',
+                  productCount: data?.counts[category.id],
+                );
+              },
             ),
           );
         },

@@ -4,8 +4,10 @@ import '../../../core/consts/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../data/models/categoria_model.dart';
+import '../../../data/models/marca_model.dart';
 import '../../../data/models/producto_model.dart';
 import '../../../data/repository/categoria_repository.dart';
+import '../../../data/repository/marca_repository.dart';
 import '../../../data/repository/producto_repository.dart';
 import '../../../widgets/common/app_empty_state.dart';
 import '../../../widgets/common/app_error_state.dart';
@@ -13,16 +15,18 @@ import '../../../widgets/common/app_loading.dart';
 import '../../../widgets/common/search_field.dart';
 import 'widgets/product_card.dart';
 
-/// Página del catálogo: búsqueda, filtro por categoría y grid de productos.
+/// Página del catálogo: búsqueda, filtros por categoría/marca y grid.
 class ProductsPage extends StatefulWidget {
   const ProductsPage({
     super.key,
     required this.productoRepository,
     required this.categoriaRepository,
+    required this.marcaRepository,
   });
 
   final ProductoRepository productoRepository;
   final CategoriaRepository categoriaRepository;
+  final MarcaRepository marcaRepository;
 
   @override
   State<ProductsPage> createState() => _ProductsPageState();
@@ -32,10 +36,12 @@ class _ProductsPageState extends State<ProductsPage>
     with AutomaticKeepAliveClientMixin {
   late Future<List<Producto>> _productsFuture;
   late Future<List<Categoria>> _categoriesFuture;
+  late Future<List<Marca>> _brandsFuture;
 
   final _searchController = TextEditingController();
   String _query = '';
   String? _selectedCategoryId;
+  String? _selectedBrandId;
 
   @override
   bool get wantKeepAlive => true;
@@ -55,6 +61,7 @@ class _ProductsPageState extends State<ProductsPage>
   void _load() {
     _productsFuture = widget.productoRepository.getCatalogoPublico();
     _categoriesFuture = widget.categoriaRepository.getCategorias();
+    _brandsFuture = widget.marcaRepository.getMarcas();
   }
 
   void _retry() => setState(_load);
@@ -62,7 +69,7 @@ class _ProductsPageState extends State<ProductsPage>
   Future<void> _refresh() async {
     setState(_load);
     try {
-      await _productsFuture;
+      await Future.wait([_productsFuture, _categoriesFuture, _brandsFuture]);
     } catch (_) {}
   }
 
@@ -70,11 +77,14 @@ class _ProductsPageState extends State<ProductsPage>
 
   void _selectCategory(String? id) => setState(() => _selectedCategoryId = id);
 
+  void _selectBrand(String? id) => setState(() => _selectedBrandId = id);
+
   void _clearFilters() {
     _searchController.clear();
     setState(() {
       _query = '';
       _selectedCategoryId = null;
+      _selectedBrandId = null;
     });
   }
 
@@ -87,11 +97,16 @@ class _ProductsPageState extends State<ProductsPage>
           product.variantes.any((v) => v.sku.toLowerCase().contains(query));
       final matchesCategory = _selectedCategoryId == null ||
           product.categorias.any((c) => c.id == _selectedCategoryId);
-      return matchesQuery && matchesCategory;
+      final matchesBrand =
+          _selectedBrandId == null || product.brandId == _selectedBrandId;
+      return matchesQuery && matchesCategory && matchesBrand;
     }).toList();
   }
 
-  bool get _isFiltering => _query.trim().isNotEmpty || _selectedCategoryId != null;
+  bool get _isFiltering =>
+      _query.trim().isNotEmpty ||
+      _selectedCategoryId != null ||
+      _selectedBrandId != null;
 
   @override
   Widget build(BuildContext context) {
@@ -126,9 +141,12 @@ class _ProductsPageState extends State<ProductsPage>
           _FilterToolbar(
             searchController: _searchController,
             categoriesFuture: _categoriesFuture,
+            brandsFuture: _brandsFuture,
             selectedCategoryId: _selectedCategoryId,
+            selectedBrandId: _selectedBrandId,
             onQueryChanged: _onQueryChanged,
             onCategorySelected: _selectCategory,
+            onBrandSelected: _selectBrand,
           ),
           Expanded(
             child: FutureBuilder<List<Producto>>(
@@ -201,21 +219,27 @@ class _ProductsPageState extends State<ProductsPage>
   }
 }
 
-/// Barra con buscador y chips de categoría para filtrar el catálogo.
+/// Barra con buscador y chips de categoría/marca para filtrar el catálogo.
 class _FilterToolbar extends StatelessWidget {
   const _FilterToolbar({
     required this.searchController,
     required this.categoriesFuture,
+    required this.brandsFuture,
     required this.selectedCategoryId,
+    required this.selectedBrandId,
     required this.onQueryChanged,
     required this.onCategorySelected,
+    required this.onBrandSelected,
   });
 
   final TextEditingController searchController;
   final Future<List<Categoria>> categoriesFuture;
+  final Future<List<Marca>> brandsFuture;
   final String? selectedCategoryId;
+  final String? selectedBrandId;
   final ValueChanged<String> onQueryChanged;
   final ValueChanged<String?> onCategorySelected;
+  final ValueChanged<String?> onBrandSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -247,10 +271,51 @@ class _FilterToolbar extends StatelessWidget {
                 if (snapshot.hasError || categories.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                return _CategoryChips(
-                  categories: categories,
+                return _FilterChips<Categoria>(
+                  allLabel: AppStrings.allCategories,
+                  items: categories,
                   selectedId: selectedCategoryId,
+                  labelOf: (c) => c.name,
+                  idOf: (c) => c.id,
                   onSelected: onCategorySelected,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            height: 36,
+            child: FutureBuilder<List<Marca>>(
+              future: brandsFuture,
+              builder: (context, snapshot) {
+                final brands = snapshot.data ?? <Marca>[];
+                if (snapshot.hasError || brands.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Row(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(right: AppSpacing.sm),
+                      child: Text(
+                        AppStrings.brandsLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _FilterChips<Marca>(
+                        allLabel: AppStrings.allBrands,
+                        items: brands,
+                        selectedId: selectedBrandId,
+                        labelOf: (m) => m.name,
+                        idOf: (m) => m.id,
+                        onSelected: onBrandSelected,
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -261,15 +326,21 @@ class _FilterToolbar extends StatelessWidget {
   }
 }
 
-class _CategoryChips extends StatelessWidget {
-  const _CategoryChips({
-    required this.categories,
+class _FilterChips<T> extends StatelessWidget {
+  const _FilterChips({
+    required this.allLabel,
+    required this.items,
     required this.selectedId,
+    required this.labelOf,
+    required this.idOf,
     required this.onSelected,
   });
 
-  final List<Categoria> categories;
+  final String allLabel;
+  final List<T> items;
   final String? selectedId;
+  final String Function(T) labelOf;
+  final String Function(T) idOf;
   final ValueChanged<String?> onSelected;
 
   @override
@@ -279,15 +350,15 @@ class _CategoryChips extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       children: [
         _chip(
-          label: AppStrings.allCategories,
+          label: allLabel,
           selected: selectedId == null,
           onTap: () => onSelected(null),
         ),
-        ...categories.map(
-          (category) => _chip(
-            label: category.name,
-            selected: selectedId == category.id,
-            onTap: () => onSelected(category.id),
+        ...items.map(
+          (item) => _chip(
+            label: labelOf(item),
+            selected: selectedId == idOf(item),
+            onTap: () => onSelected(idOf(item)),
           ),
         ),
       ],
